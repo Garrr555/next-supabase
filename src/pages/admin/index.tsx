@@ -50,6 +50,10 @@ import { toast } from "sonner";
 export default function AdminPage() {
   const [menus, setMenus] = useState<IMenu[]>([]);
   const [createDialog, setCreateDialog] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState<{
+    menu: IMenu;
+    action: "edit" | "delete";
+  } | null>(null);
 
   useEffect(() => {
     const fetchMenus = async () => {
@@ -91,6 +95,28 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteMenu = async () => {
+    try {
+      const { error } = await supabase
+        .from("menus")
+        .delete()
+        .eq("id", selectedMenu?.menu.id);
+
+      if (error) {
+        console.log("error: ", error);
+      } else {
+        setMenus((prev) =>
+          prev.filter((menu) => menu.id !== selectedMenu?.menu.id)
+        );
+        toast("Menu deleted successfully");
+        setSelectedMenu(null);
+      }
+    } catch (error) {
+      console.log("error: ", error);
+      toast("Failed to delted menu");
+    }
+  };
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-4 w-full flex justify-between">
@@ -104,7 +130,7 @@ export default function AdminPage() {
           <DialogContent className="sm:max-w-md">
             <form onSubmit={handleAddMenu} className="space-y-4">
               <DialogHeader>
-                <DialogTitle className="text-neutral-500">Add Menu</DialogTitle>
+                <DialogTitle className="text-black">Add Menu</DialogTitle>
                 <DialogDescription>
                   Create a new menu by insert data in this form
                 </DialogDescription>
@@ -229,7 +255,12 @@ export default function AdminPage() {
                       <DropdownMenuSeparator />
                       <DropdownMenuGroup>
                         <DropdownMenuItem>View</DropdownMenuItem>
-                        <DropdownMenuItem className=" text-red-400">
+                        <DropdownMenuItem
+                          className=" text-red-400"
+                          onClick={() =>
+                            setSelectedMenu({ menu: menu, action: "delete" })
+                          }
+                        >
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
@@ -241,6 +272,37 @@ export default function AdminPage() {
           </TableBody>
         </Table>
       </div>
+      <Dialog
+        open={selectedMenu !== null && selectedMenu.action === "delete"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedMenu(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-black">Delete Menu</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {selectedMenu?.menu?.name}?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose>
+              <Button className="cursor-pointer" variant={"secondary"}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button
+              className="cursor-pointer"
+              onClick={handleDeleteMenu}
+              variant={"destructive"}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
