@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import supabase from "@/lib/db";
 import { IMenu } from "@/types/menu";
+import { convertIDR } from "@/utils/currency";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -43,13 +45,17 @@ export default function Home() {
                   <h4 className="font-semibold text-xl">{menu.name}</h4>
                   <p>{menu.category}</p>
                 </div>
-                <p className="font-semibold text-2xl">Rp.{menu.price}</p>
+                <p className="font-semibold text-2xl">
+                  {convertIDR(menu.price)}
+                </p>
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full font-bold" size={"lg"}>
-                Detail Menu
-              </Button>
+              <Link href={`/menu/${menu.id}`} className="w-full">
+                <Button className="w-full font-bold" size={"lg"}>
+                  Detail Menu
+                </Button>
+              </Link>
             </CardFooter>
           </Card>
         ))}

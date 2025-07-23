@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import supabase from "@/lib/db";
 import { IMenu } from "@/types/menu";
+import { convertIDR } from "@/utils/currency";
 import { Ellipsis } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -83,7 +84,7 @@ export default function AdminPage() {
                   {menu.description.split(" ").slice(0, 5).join(" ") + "..."}
                 </TableCell>
                 <TableCell>{menu.category}</TableCell>
-                <TableCell>Rp.{menu.price}</TableCell>
+                <TableCell>{convertIDR(menu.price)}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild className="cursor-pointer">
