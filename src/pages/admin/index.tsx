@@ -117,6 +117,35 @@ export default function AdminPage() {
     }
   };
 
+  const handleEditMenu = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const { error } = await supabase
+        .from("menus")
+        .update(Object.fromEntries(formData))
+        .eq("id", selectedMenu?.menu.id);
+
+      if (error) {
+        console.log("error: ", error);
+      } else {
+        setMenus((prev) =>
+          prev.map((menu) =>
+            menu.id === selectedMenu?.menu.id
+              ? { ...menu, ...Object.fromEntries(formData) }
+              : menu
+          )
+        );
+
+        toast("Menu edit successfully");
+        setSelectedMenu(null);
+      }
+    } catch (error) {
+      console.log("error: ", error);
+      toast("Failed to edit menu");
+    }
+  };
   return (
     <div className="container mx-auto py-8">
       <div className="mb-4 w-full flex justify-between">
@@ -192,7 +221,11 @@ export default function AdminPage() {
               </div>
               <DialogFooter>
                 <DialogClose>
-                  <Button className="cursor-pointer" variant={"secondary"}>
+                  <Button
+                    className="cursor-pointer"
+                    variant={"secondary"}
+                    type="button"
+                  >
                     Cancel
                   </Button>
                 </DialogClose>
@@ -256,7 +289,15 @@ export default function AdminPage() {
                       <DropdownMenuGroup>
                         <DropdownMenuItem>View</DropdownMenuItem>
                         <DropdownMenuItem
-                          className=" text-red-400"
+                          className=" "
+                          onClick={() =>
+                            setSelectedMenu({ menu: menu, action: "edit" })
+                          }
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className=" text-red-700"
                           onClick={() =>
                             setSelectedMenu({ menu: menu, action: "delete" })
                           }
@@ -301,6 +342,103 @@ export default function AdminPage() {
               Delete
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={selectedMenu !== null && selectedMenu.action === "edit"}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedMenu(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={handleEditMenu} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle className="text-black">Edit Menu</DialogTitle>
+              <DialogDescription>
+                Edit {selectedMenu?.menu?.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid w-full gap-4">
+              <div className="grid w-full gap-1.5">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Insert Name"
+                  name="name"
+                  required
+                  defaultValue={selectedMenu?.menu?.name}
+                />
+              </div>
+              <div className="grid w-full gap-1.5">
+                <Label htmlFor="price">Price</Label>
+                <Input
+                  id="price"
+                  placeholder="Insert Price"
+                  name="price"
+                  required
+                  defaultValue={selectedMenu?.menu?.price}
+                />
+              </div>
+              <div className="grid w-full gap-1.5">
+                <Label htmlFor="image">Image</Label>
+                <Input
+                  id="image"
+                  placeholder="Insert Image"
+                  name="image"
+                  required
+                  defaultValue={selectedMenu?.menu?.image}
+                />
+              </div>
+              <div className="grid w-full gap-1.5">
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  name="category"
+                  required
+                  defaultValue={selectedMenu?.menu?.category}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Category</SelectLabel>
+                      <SelectItem value="food">Food</SelectItem>
+                      <SelectItem value="drink">Drink</SelectItem>
+                      <SelectItem value="dessert">Dessert</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid w-full gap-1.5">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  className="resize-none h-32"
+                  id="description"
+                  placeholder="Insert Description"
+                  name="description"
+                  required
+                  defaultValue={selectedMenu?.menu?.description}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose>
+                <Button
+                  className="cursor-pointer"
+                  variant={"secondary"}
+                  type="button"
+                >
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button className="cursor-pointer" type="submit">
+                Update
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
